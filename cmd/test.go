@@ -59,12 +59,15 @@ func parseTestcases(filename string) []map[string]string {
 			expected := strings.TrimSpace(outMatch[1])
 			var cleanLines []string
 			for _, line := range rawLines {
-				cl := strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(line, "[", ""), "]", ""), ",", " ")
+				cl := strings.ReplaceAll(line, "\"", "")
+				cl = strings.ReplaceAll(cl, "[", "")
+				cl = strings.ReplaceAll(cl, "]", "")
+				cl = strings.ReplaceAll(cl, ",", " ")
 				cleanLines = append(cleanLines, cl)
 			}
 			testCases = append(testCases, map[string]string{
 				"input":  strings.Join(cleanLines, "\n"),
-				"output": expected,
+				"output": strings.ReplaceAll(expected, "\"", ""),
 			})
 		}
 	}
@@ -277,9 +280,10 @@ func onlineTest(slug string) {
 
 	var inputs []string
 	for _, c := range cases {
-		inputs = append(inputs, c["input"])
+		cleanIn := strings.ReplaceAll(c["input"], "\"", "")
+		inputs = append(inputs, cleanIn)
 	}
-	customInput := fmt.Sprintf("%d\n%s", len(cases), strings.Join(inputs, "\n"))
+	customInput := strings.Join(inputs, "\n")
 
 	triggerUrl := fmt.Sprintf("https://practiceapiorigin.geeksforgeeks.org/api/latest/problems/%s/compile-sub-id/", slug)
 	payload := map[string]string{
@@ -332,15 +336,27 @@ func onlineTest(slug string) {
 	var subId string
 	if id, ok := resultsData["sub_id"].(float64); ok {
 		subId = fmt.Sprintf("%.0f", id)
+	} else if id, ok := resultsData["sub_id"].(string); ok {
+		subId = id
 	} else if id, ok := resultsData["expected_submission_id"].(float64); ok {
 		subId = fmt.Sprintf("%.0f", id)
+	} else if id, ok := resultsData["expected_submission_id"].(string); ok {
+		subId = id
 	}
 
 	var testSolSubId string
 	if id, ok := resultsData["testSolution_sub_id"].(float64); ok {
 		testSolSubId = fmt.Sprintf("%.0f", id)
+	} else if id, ok := resultsData["testSolution_sub_id"].(string); ok {
+		testSolSubId = id
 	} else if idStr, ok := resultsData["testSolution_submission_id"].(string); ok {
 		testSolSubId = idStr
+	} else if id, ok := resultsData["testSolution_submission_id"].(float64); ok {
+		testSolSubId = fmt.Sprintf("%.0f", id)
+	}
+
+	if config.Debug {
+		fmt.Printf("DEBUG: Extracted subId: %s, testSolSubId: %s\n", subId, testSolSubId)
 	}
 
 	if subId == "" {
