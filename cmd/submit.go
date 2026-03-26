@@ -176,27 +176,6 @@ var submitCmd = &cobra.Command{
 					}
 				}
 
-				relatedUrl := fmt.Sprintf("https://practiceapi.geeksforgeeks.org/api/latest/problems/%s/related-problems/", pid)
-				rReq, _ := http.NewRequest("GET", relatedUrl, nil)
-				for k, v := range api.GetHeaders() {
-					rReq.Header.Set(k, v)
-				}
-				rResp, err := client.Do(rReq)
-				if err == nil {
-					rb, _ := io.ReadAll(rResp.Body)
-					rResp.Body.Close()
-					var rData map[string]interface{}
-					json.Unmarshal(rb, &rData)
-					if rResults, ok := rData["results"].([]interface{}); ok && len(rResults) > 0 {
-						fmt.Println("\nRelated Problems:")
-						for _, pRaw := range rResults {
-							if pMap, ok := pRaw.(map[string]interface{}); ok {
-								fmt.Printf("- %s (%s)\n", pMap["problem_name"], pMap["slug"])
-							}
-						}
-					}
-				}
-
 				return
 			} else if status == "error" || data["error"] != nil {
 				errMsg, _ := data["message"].(string)
