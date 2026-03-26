@@ -51,6 +51,9 @@ func FetchProblemDetails(slug string) (map[string]interface{}, error) {
 	}
 
 	client := &http.Client{}
+	if config.Debug {
+		fmt.Printf("DEBUG: Fetching problem details from %s\n", url)
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err

@@ -292,6 +292,10 @@ func onlineTest(slug string) {
 	}
 
 	body, contentType, _ := createMultipart(payload)
+	if config.Debug {
+		fmt.Printf("DEBUG: Triggering URL: %s\n", triggerUrl)
+		fmt.Printf("DEBUG: Payload: %+v\n", payload)
+	}
 	fmt.Printf("Triggering online test for %s...\n", slug)
 
 	req, _ := http.NewRequest("POST", triggerUrl, body)
@@ -314,6 +318,9 @@ func onlineTest(slug string) {
 	}
 
 	respBody, _ := io.ReadAll(resp.Body)
+	if config.Debug {
+		fmt.Printf("DEBUG: Online test response: %s\n", string(respBody))
+	}
 	var resJson map[string]interface{}
 	json.Unmarshal(respBody, &resJson)
 
